@@ -49,14 +49,18 @@ int lsentry(int argc, char* argv[], int index) {
 		}
 	}
 
-	std::cout << "[ aflag = " << aflag << " ]\n";
-	std::cout << "[ iflag = " << iflag << " ]\n";
-	std::cout << "[ hflag = " << hflag << " ]\n";
-	std::cout << "[ dumpflag = " << dumpflag << " ]\n";
-	std::cout << "[ aindex = " << aindex << " ]\n";
-	std::cout << "[ iindex = " << iindex << " ]\n";
-	std::cout << "[ hindex = " << hindex << " ]\n";
-	std::cout << "[ ival = " << ival << " ]\n";
-	
+	if (hflag) {
+		std::cout << helpStr_ls << std::endl;
+		return 0;
+	}
+
+	if (aflag) {
+		return 0;
+	}
+
+	if (iflag) {
+		return 0;
+	}
+
 	return 0;
 }
