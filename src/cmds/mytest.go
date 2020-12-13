@@ -1,10 +1,9 @@
 package cmds
 
 import (
-
-	"db"
+	"fmt"
 )
 
 func MyTest() {
-	db.Test()
+	fmt.Println("Test code")
 }

@@ -17,7 +17,7 @@ func main() {
 
 	addCmd		:= flag.NewFlagSet("add", flag.ExitOnError)
 	addT		:= addCmd.String("t", "", "Title")
-	addURL		:= addCmd.String("-url", "", "URL")
+	addURL		:= addCmd.String("url", "", "URL")
 	addU		:= addCmd.String("u", "", "User ID")
 	addP		:= addCmd.String("p", "", "Password")
 	addE		:= addCmd.String("e", "", "E-mail")

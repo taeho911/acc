@@ -2,7 +2,6 @@ package db
 
 import (
 	"os"
-	"sync"
 	"time"
 	"context"
 	"strings"
@@ -16,16 +15,8 @@ import (
 
 const usernameKey string = "MONGO_USERNAME"
 const passwordKey string = "MONGO_PASSWORD"
-const host string = "localhost"
-const port string = "27017"
-const dbserver string = "mongodb://" + host + ":" + port
-const DATABASE string = "taeho"
-const COLLECTION string = "acc"
-
-var once sync.Once
-var client *mongo.Client
-var ctx context.Context
-var cancel context.CancelFunc
+const database string = "taeho"
+const collection string = "acc"
 
 type Acc struct {
 	Index int
@@ -38,90 +29,39 @@ type Acc struct {
 	Memo string
 }
 
-func NewClient() {
-	once.Do(func() {
-		username := os.Getenv(usernameKey)
-		password := os.Getenv(passwordKey)
+// INTERNAL FUNCTIONS ============================================================
 
-		var sb strings.Builder
-		sb.WriteString("mongodb://")
-		sb.WriteString(username)
-		sb.WriteString(":")
-		sb.WriteString(password)
-		sb.WriteString("@")
-		sb.WriteString(host)
-		sb.WriteString(":")
-		sb.WriteString(port)
-		sb.WriteString("/?authSource=admin")
+func getClient() (*mongo.Client, context.Context, context.CancelFunc) {
+	username := os.Getenv(usernameKey)
+	password := os.Getenv(passwordKey)
 
-		connectionURL := sb.String()
+	var sb strings.Builder
+	sb.WriteString("mongodb://")
+	sb.WriteString(username)
+	sb.WriteString(":")
+	sb.WriteString(password)
+	sb.WriteString("@localhost:27017/?authSource=admin")
+	connectionURL := sb.String()
 
-		var err error
-		client, err = mongo.NewClient(options.Client().ApplyURI(connectionURL))
-		if err != nil {
-			log.Panicln("Error: Failed to create database client")
-		}
-		ctx, cancel = context.WithTimeout(context.Background(), 5 * time.Second)
-		// defer cancel()
-
-		err = client.Connect(ctx)
-		if err != nil {
-			log.Panicln("Error: Failed to connect to database")
-		}
-		// defer client.Disconnect(ctx)
-	})
-}
-
-func DelClient() {
-	if client != nil && cancel != nil {
-		client.Disconnect(ctx)
-		cancel()
-	}
-}
-
-func SetUsername(username string) {
-	err := os.Setenv(usernameKey, username)
+	client, err := mongo.NewClient(options.Client().ApplyURI(connectionURL))
 	if err != nil {
-		log.Panicln("Error: Failed to set username")
+		log.Panicln("Error: Failed to create database client")
 	}
-}
+	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
 
-func SetPassword(password string) {
-	err := os.Setenv(passwordKey, password)
+	err = client.Connect(ctx)
 	if err != nil {
-		log.Panicln("Error: Failed to set password")
+		log.Panicln("Error: Failed to connect to database")
 	}
+	return client, ctx, cancel
 }
 
-func UnsetUsername() {
-	err := os.Unsetenv(usernameKey)
-	if err != nil {
-		log.Panicln("Error: Failed to unset username")
-	}
+func delClient(client *mongo.Client, ctx context.Context, cancel context.CancelFunc) {
+	client.Disconnect(ctx)
+	cancel()
 }
 
-func UnsetPassword() {
-	err := os.Unsetenv(passwordKey)
-	if err != nil {
-		log.Panicln("Error: Failed to unset password")
-	}
-}
-
-func PingConnection() {
-	if client == nil {
-		log.Println("No client for database")
-	} else {
-		err := client.Ping(ctx, readpref.Primary())
-		if err != nil {
-			log.Println("Failed to authenticate")
-			log.Println(err)
-		} else {
-			log.Println("Succeed to connect to", dbserver)
-		}
-	}
-}
-
-func setAndGetNextSeq(coll *mongo.Collection) interface{} {
+func issueNextSeq(coll *mongo.Collection, ctx context.Context) interface{} {
 	var updatedDoc bson.M
 	filter := bson.D{{"_id", "seq"}}
 	update := bson.D{{"$inc", bson.D{{"seq_num", 1}}}}
@@ -138,9 +78,51 @@ func setAndGetNextSeq(coll *mongo.Collection) interface{} {
 	return updatedDoc["seq_num"]
 }
 
-func Test() {
-	NewClient()
-	coll := client.Database(DATABASE).Collection(COLLECTION)
-	seqNum := setAndGetNextSeq(coll)
-	log.Println("updatedDoc[\"seq_num\"]=", seqNum)
+// EXPORT FUNCTIONS ============================================================
+
+func Ping() bool {
+	client, ctx, cancel := getClient()
+	defer delClient(client, ctx, cancel)
+
+	if client == nil {
+		log.Println("No client for database")
+		return false
+	} else {
+		err := client.Ping(ctx, readpref.Primary())
+		if err != nil {
+			log.Println("Failed to authenticate")
+			log.Println(err)
+			return false
+		} else {
+			log.Println("Succeed to connect")
+			return true
+		}
+	}
 }
+
+func InsertOne(title, url, uid, pwd, email, memo string, aliasArr []string) interface{} {
+	client, ctx, cancel := getClient()
+	defer delClient(client, ctx, cancel)
+	coll := client.Database(database).Collection(collection)
+
+	document := bson.M{
+		"_id": issueNextSeq(coll, ctx),
+		"title": title,
+		"url": url,
+		"uid": uid,
+		"pwd": pwd,
+		"email": email,
+		"alias": aliasArr,
+		"memo": memo,
+	}
+
+	result, err := coll.InsertOne(ctx, document)
+	if err != nil {
+		log.Println("Failed to insert")
+		return nil
+	}
+
+	return result
+}
+
+// TEST FUNCTIONS ============================================================

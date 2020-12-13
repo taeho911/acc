@@ -31,9 +31,5 @@ func Login(username string, password string) {
 		password = string(bytePwd)
 	}
 
-	db.SetUsername(username)
-	db.SetPassword(password)
-	db.NewClient()
-	db.PingConnection()
-	db.DelClient()
+	db.Ping()
 }
