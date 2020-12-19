@@ -100,7 +100,7 @@ func Ping() bool {
 	}
 }
 
-func InsertOne(title, url, uid, pwd, email, memo string, aliasArr []string) interface{} {
+func InsertOne(title, url, uid, pwd, email, memo string, aliasArr []string) *mongo.InsertOneResult {
 	client, ctx, cancel := getClient()
 	defer delClient(client, ctx, cancel)
 	coll := client.Database(database).Collection(collection)
@@ -119,6 +119,50 @@ func InsertOne(title, url, uid, pwd, email, memo string, aliasArr []string) inte
 	result, err := coll.InsertOne(ctx, document)
 	if err != nil {
 		log.Println("Failed to insert")
+		return nil
+	}
+
+	return result
+}
+
+func DeleteMany(idArr []int) *mongo.DeleteResult {
+	client, ctx, cancel := getClient()
+	defer delClient(client, ctx, cancel)
+	coll := client.Database(database).Collection(collection)
+
+	document := bson.M{
+		"_id": bson.D{{"$in", idArr}},
+	}
+
+	result, err := coll.DeleteMany(ctx, document)
+	if err != nil {
+		log.Println("Failed to delete")
+		return nil
+	}
+
+	return result
+}
+
+func FindAll() []bson.M {
+	client, ctx, cancel := getClient()
+	defer delClient(client, ctx, cancel)
+	coll := client.Database(database).Collection(collection)
+
+	document := bson.M{
+		"_id": bson.D{{"$not", bson.D{{"$eq", "seq"}}}},
+	}
+	opts := options.Find().SetSort(bson.D{{"_id", 1}})
+
+	cursor, err := coll.Find(ctx, document, opts)
+	if err != nil {
+		log.Println(err)
+		log.Panic("Failed to find all - 1")
+		return nil
+	}
+	var result []bson.M
+	if err = cursor.All(ctx, &result); err != nil {
+		log.Println(err)
+		log.Panic("Failed to find all - 2")
 		return nil
 	}
 
