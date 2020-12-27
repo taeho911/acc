@@ -17,7 +17,7 @@ func main() {
 
 	addCmd		:= flag.NewFlagSet("add", flag.ExitOnError)
 	addT		:= addCmd.String("t", "", "Title")
-	addURL		:= addCmd.String("url", "", "URL")
+	addURL		:= addCmd.String("U", "", "URL")
 	addU		:= addCmd.String("u", "", "User ID")
 	addP		:= addCmd.String("p", "", "Password")
 	addE		:= addCmd.String("e", "", "E-mail")
@@ -27,12 +27,13 @@ func main() {
 	delCmd		:= flag.NewFlagSet("del", flag.ExitOnError)
 
 	lsCmd		:= flag.NewFlagSet("ls", flag.ExitOnError)
-	lsA			:= lsCmd.Bool("a", true, "List up all")
+	lsAll		:= lsCmd.Bool("all", false, "List up all")
 	lsO			:= lsCmd.String("o", "wide", "Wide output")
+	lsI			:= lsCmd.Int("i", 0, "Search using _id")
+	lsT			:= lsCmd.String("t", "", "Search using title")
+	lsA			:= lsCmd.String("a", "", "Search using alias")
+	lsU			:= lsCmd.String("u", "", "Search using user ID")
 	/*
-	lsI			:= lsCmd.Int("i", 0, "Search using index")
-	lsT			:= lsCmd.String("t", nil, "Search using index")
-
 	modCmd		:= flag.NewFlagSet("mod", flag.ExitOnError)
 	*/
 
@@ -62,7 +63,7 @@ func main() {
 
 	case "ls":
 		lsCmd.Parse(os.Args[2:])
-		cmds.Ls(*lsA, *lsO)
+		cmds.Ls(*lsAll, *lsI, *lsO, *lsT, *lsA, *lsU)
 
 	default:
 		fmt.Printf("There is no %s subcommand", os.Args[1])

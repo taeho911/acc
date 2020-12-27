@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
     "go.mongodb.org/mongo-driver/mongo/readpref"
@@ -18,15 +19,15 @@ const passwordKey string = "MONGO_PASSWORD"
 const database string = "taeho"
 const collection string = "acc"
 
-type Acc struct {
-	Index int
-	Title string
-	Url string
-	Uid string
-	Pwd string
-	Email string
-	Alias []string
-	Memo string
+type Account struct {
+	Id primitive.ObjectID `bson:"_id",omitempty`
+	Title string `bson:"title",omitempty`
+	Url string `bson:"url",omitempty`
+	Uid string `bson:"uid",omitempty`
+	Pwd string `bson:"pwd",omitempty`
+	Email string `bson:"email",omitempty`
+	Alias []string `bson:"alias",omitempty`
+	Memo string `bson:"memo",omitempty`
 }
 
 // INTERNAL FUNCTIONS ============================================================
@@ -163,6 +164,35 @@ func FindAll() []bson.M {
 	if err = cursor.All(ctx, &result); err != nil {
 		log.Println(err)
 		log.Panic("Failed to find all - 2")
+		return nil
+	}
+
+	return result
+}
+
+func Find(id int, title, alias, uid string) []Account {
+	client, ctx, cancel := getClient()
+	defer delClient(client, ctx, cancel)
+	coll := client.Database(database).Collection(collection)
+
+	document := bson.M{
+		"_id": id,
+		"title": bson.D{{"$regex", title}},
+		"alias": bson.D{{"$all", alias}},
+		"uid": bson.D{{"$regex", uid}},
+	}
+	opts := options.Find().SetSort(bson.D{{"_id", 1}})
+	
+	cursor, err := coll.Find(ctx, document, opts)
+	if err != nil {
+		log.Println(err)
+		log.Panic("Failed to find - 1")
+		return nil
+	}
+	var result []Account
+	if err = cursor.All(ctx, &result); err != nil {
+		log.Println(err)
+		log.Panic("Failed to find - 2")
 		return nil
 	}
 
