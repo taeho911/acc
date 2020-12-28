@@ -8,7 +8,6 @@ import (
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
     "go.mongodb.org/mongo-driver/mongo/readpref"
@@ -20,7 +19,7 @@ const database string = "taeho"
 const collection string = "acc"
 
 type Account struct {
-	Id primitive.ObjectID `bson:"_id",omitempty`
+	Id float64 `bson:"_id",omitempty`
 	Title string `bson:"title",omitempty`
 	Url string `bson:"url",omitempty`
 	Uid string `bson:"uid",omitempty`
@@ -66,8 +65,8 @@ func issueNextSeq(coll *mongo.Collection, ctx context.Context) interface{} {
 	var updatedDoc bson.M
 	filter := bson.D{{"_id", "seq"}}
 	update := bson.D{{"$inc", bson.D{{"seq_num", 1}}}}
-	option := options.FindOneAndUpdate().SetUpsert(true)
-	err := coll.FindOneAndUpdate(ctx, filter, update, option).Decode(&updatedDoc)
+	opts := options.FindOneAndUpdate().SetUpsert(true)
+	err := coll.FindOneAndUpdate(ctx, filter, update, opts).Decode(&updatedDoc)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			log.Println("There was no document for _id=seq")
@@ -144,7 +143,7 @@ func DeleteMany(idArr []int) *mongo.DeleteResult {
 	return result
 }
 
-func FindAll() []bson.M {
+func FindAll() []Account {
 	client, ctx, cancel := getClient()
 	defer delClient(client, ctx, cancel)
 	coll := client.Database(database).Collection(collection)
@@ -155,12 +154,13 @@ func FindAll() []bson.M {
 	opts := options.Find().SetSort(bson.D{{"_id", 1}})
 
 	cursor, err := coll.Find(ctx, document, opts)
+	defer cursor.Close(ctx)
 	if err != nil {
 		log.Println(err)
 		log.Panic("Failed to find all - 1")
 		return nil
 	}
-	var result []bson.M
+	var result []Account
 	if err = cursor.All(ctx, &result); err != nil {
 		log.Println(err)
 		log.Panic("Failed to find all - 2")
@@ -175,15 +175,24 @@ func Find(id int, title, alias, uid string) []Account {
 	defer delClient(client, ctx, cancel)
 	coll := client.Database(database).Collection(collection)
 
-	document := bson.M{
-		"_id": id,
-		"title": bson.D{{"$regex", title}},
-		"alias": bson.D{{"$all", alias}},
-		"uid": bson.D{{"$regex", uid}},
+	var conditions []bson.M
+	if id != 0 {
+		conditions = append(conditions, bson.M{"_id": id})
 	}
+	if title != "" {
+		conditions = append(conditions, bson.M{"title": bson.D{{"$regex", title}}})
+	}
+	if alias != "" {
+		conditions = append(conditions, bson.M{"alias": bson.D{{"$all", []string{alias}}}})
+	}
+	if uid != "" {
+		conditions = append(conditions, bson.M{"uid": bson.D{{"$regex", uid}}})
+	}
+	document := bson.M{"$and": conditions}
 	opts := options.Find().SetSort(bson.D{{"_id", 1}})
 	
 	cursor, err := coll.Find(ctx, document, opts)
+	defer cursor.Close(ctx)
 	if err != nil {
 		log.Println(err)
 		log.Panic("Failed to find - 1")
@@ -193,6 +202,52 @@ func Find(id int, title, alias, uid string) []Account {
 	if err = cursor.All(ctx, &result); err != nil {
 		log.Println(err)
 		log.Panic("Failed to find - 2")
+		return nil
+	}
+
+	return result
+}
+
+func UpdateMany(idArr []int, title, uid, pwd, url, email, alias, memo string, delFlag, addFlag bool) *mongo.UpdateResult {
+	client, ctx, cancel := getClient()
+	defer delClient(client, ctx, cancel)
+	coll := client.Database(database).Collection(collection)
+
+	filter := bson.M{"_id": bson.D{{"$in", idArr}}}
+	setMap := bson.M{}
+	if title != "" {
+		setMap["title"] = title
+	}
+	if uid != "" {
+		setMap["uid"] = uid
+	}
+	if pwd != "" {
+		setMap["pwd"] = pwd
+	}
+	if url != "" {
+		setMap["url"] = url
+	}
+	if email != "" {
+		setMap["email"] = email
+	}
+	if alias != "" {
+		if addFlag == true {
+			setMap["$push"] = bson.D{{"alias", alias}}
+		} else if delFlag == true {
+			setMap["$pull"] = bson.D{{"alias", alias}}
+		} else {
+			setMap["$push"] = bson.D{{"alias", alias}}
+		}
+	}
+	if memo != "" {
+		setMap["memo"] = memo
+	}
+	update := bson.M{"$set": setMap}
+
+	result, err := coll.UpdateMany(ctx, filter, update)
+	if err != nil {
+		log.Println(err)
+		log.Panic("Failed to update many - 1")
 		return nil
 	}
 

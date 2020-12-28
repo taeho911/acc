@@ -29,4 +29,13 @@ func main() {
 		fmt.Println(err)
 	}
 	fmt.Println("result:", string(result))
+
+	test := bson.M{}
+	test["name"] = "Kim"
+	test["age"] = 30
+	test["address"] = "Tokyo"
+	fmt.Println("test:", test)
+
+	test2 := bson.M{"$set": bson.M{}}
+	fmt.Println("test2[$set]:", test2["$set"])
 }

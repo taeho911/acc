@@ -5,21 +5,19 @@ import (
 	"regexp"
 	"strings"
 	"strconv"
+	"os"
+	"text/tabwriter"
 
 	"db"
-
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func Ls(allFlag bool, id int, outputFormat, title, alias, uid string) {
-	var result []bson.M
+	var result []db.Account
 
-	if id != 0 || title != "" || alias != "" || uid != "" {
-		result = db.Find(id, title, alias, uid)
-	} else if allFlag == true {
+	if allFlag == true && id == 0 && title == "" && alias == "" && uid == "" {
 		result = db.FindAll()
 	} else {
-		result = db.FindAll()
+		result = db.Find(id, title, alias, uid)
 	}
 
 	switch outputFormat {
@@ -37,66 +35,55 @@ func Ls(allFlag bool, id int, outputFormat, title, alias, uid string) {
 				fmt.Println(convertedString)
 			}
 		} else {
-			printWide(result)
+			printShort(result)
 		}
 	}
 }
 
-func printWide(result []bson.M) {
+func printWide(result []db.Account) {
 	for _, item := range result {
-		fmt.Println("_id:\t", item["_id"])
-		fmt.Println("title:\t", item["title"])
-		fmt.Println("uid:\t", item["uid"])
-		fmt.Println("pwd:\t", item["pwd"])
-		fmt.Println("url:\t", item["url"])
-		fmt.Println("email:\t", item["email"])
-		fmt.Println("alias:\t", item["alias"])
-		fmt.Println("memo:\t", item["memo"])
+		fmt.Println("_id:\t", item.Id)
+		fmt.Println("title:\t", item.Title)
+		fmt.Println("uid:\t", item.Uid)
+		fmt.Println("pwd:\t", item.Pwd)
+		fmt.Println("url:\t", item.Url)
+		fmt.Println("email:\t", item.Email)
+		fmt.Println("alias:\t", item.Alias)
+		fmt.Println("memo:\t", item.Memo)
 		fmt.Println()
 	}
 }
 
-func printShort(result []bson.M) {
-	fmt.Printf("TITLE\t\tUID\t\tPWD\n")
+func printShort(result []db.Account) {
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 0, 8, 2, '\t', 0)
+	fmt.Fprintf(w, "INDEX\tTITLE\tUID\tPWD\n")
 	for _, item := range result {
-		fmt.Printf("%s\t\t%s\t\t%s\n", item["title"], item["uid"], item["pwd"])
+		fmt.Fprintf(w, "%g\t%s\t%s\t%s\n", item.Id, item.Title, item.Uid, item.Pwd)
 	}
+	w.Flush()
 }
 
-func convertFormat(format string, item bson.M) string {
+func convertFormat(format string, item db.Account) string {
 	var sb strings.Builder
 	sb.WriteString("[")
-	for i, value := range item["alias"].(bson.A) {
-		sb.WriteString(value.(string))
-		if i == (len(item["alias"].(bson.A)) - 1) {
+	for i, value := range item.Alias {
+		sb.WriteString(value)
+		if i == (len(item.Alias) - 1) {
 			sb.WriteString("]")
 		} else {
-			sb.WriteString(", ")
+			sb.WriteString(" ")
 		}
 	}
 
-	// switch t := item["alias"].(type) {
-	// case []string:
-	// 	for i, item := range t {
-	// 		fmt.Println("i:", i, "item:", item)
-	// 	}
-	// case bson.A:
-	// 	fmt.Println("bson.A")
-	// 	for i, item := range t {
-	// 		fmt.Println("i:", i, "item:", item)
-	// 	}
-	// default:
-	// 	fmt.Printf("type: %T\n", t)
-	// }
-	
 	convertedString := format
-	convertedString = strings.ReplaceAll(convertedString, "%i", strconv.FormatFloat(item["_id"].(float64), 'f', -1, 64))
-	convertedString = strings.ReplaceAll(convertedString, "%t", item["title"].(string))
-	convertedString = strings.ReplaceAll(convertedString, "%u", item["uid"].(string))
-	convertedString = strings.ReplaceAll(convertedString, "%p", item["pwd"].(string))
-	convertedString = strings.ReplaceAll(convertedString, "%U", item["url"].(string))
-	convertedString = strings.ReplaceAll(convertedString, "%e", item["email"].(string))
+	convertedString = strings.ReplaceAll(convertedString, "%i", strconv.FormatFloat(item.Id, 'f', -1, 64))
+	convertedString = strings.ReplaceAll(convertedString, "%t", item.Title)
+	convertedString = strings.ReplaceAll(convertedString, "%u", item.Uid)
+	convertedString = strings.ReplaceAll(convertedString, "%p", item.Pwd)
+	convertedString = strings.ReplaceAll(convertedString, "%U", item.Url)
+	convertedString = strings.ReplaceAll(convertedString, "%e", item.Email)
 	convertedString = strings.ReplaceAll(convertedString, "%a", sb.String())
-	convertedString = strings.ReplaceAll(convertedString, "%m", item["memo"].(string))
+	convertedString = strings.ReplaceAll(convertedString, "%m", item.Memo)
 	return convertedString
 }

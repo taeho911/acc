@@ -2,7 +2,6 @@ package cmds
 
 import (
 	"fmt"
-	"log"
 	"syscall"
 
 	"db"
@@ -15,9 +14,11 @@ func Login(username string, password string) {
 		fmt.Print("Enter username: ")
 		argn, err := fmt.Scanf("%s", &username)
 		if err != nil {
-			log.Panicln("Error: Failed to read username")
+			fmt.Println("Error: Failed to read username")
+			return
 		} else if argn < 1 {
-			log.Panicln("Error: You didn't enter username")
+			fmt.Println("Error: You didn't enter username")
+			return
 		}
 	}
 
@@ -26,7 +27,8 @@ func Login(username string, password string) {
 		bytePwd, err := terminal.ReadPassword(int(syscall.Stdin))
 		fmt.Println()
 		if err != nil {
-			log.Panicln("Error: Failed to read password")
+			fmt.Println("Error: Failed to read password")
+			return
 		}
 		password = string(bytePwd)
 	}

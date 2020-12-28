@@ -7,7 +7,7 @@ import (
 	"db"
 )
 
-func Del(idArr []string) {
+func Mod(idArr []string, title, uid, pwd, url, email, alias, memo string, delFlag, addFlag bool) {
 	idIntArr := make([]int, len(idArr))
 	var err error = nil
 	for i, item := range idArr {
@@ -16,6 +16,6 @@ func Del(idArr []string) {
 		}
 	}
 
-	result := db.DeleteMany(idIntArr)
-	fmt.Println("# Deleted documents:", result.DeletedCount)
+	result := db.UpdateMany(idIntArr, title, uid, pwd, url, email, alias, memo, delFlag, addFlag)
+	fmt.Println("# Modified documents:", result.ModifiedCount)
 }

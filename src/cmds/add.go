@@ -4,7 +4,6 @@ import (
 	"os"
 	"fmt"
 	"syscall"
-	"log"
 	"bufio"
 	"strings"
 
@@ -29,7 +28,8 @@ func Add(title, url, uid, pwd, email, alias, memo string) {
 		bytePwd, err := terminal.ReadPassword(int(syscall.Stdin))
 		fmt.Println()
 		if err != nil {
-			log.Panicln("Error: Failed to read password")
+			fmt.Println("Error: Failed to read password")
+			return
 		}
 		pwd = string(bytePwd)
 	}
@@ -60,6 +60,6 @@ func Add(title, url, uid, pwd, email, alias, memo string) {
 
 	result := db.InsertOne(title, url, uid, pwd, email, memo, aliasArr)
 	if result == nil {
-		log.Println("Failed to post credential")
+		fmt.Println("Failed to post credential")
 	}
 }
