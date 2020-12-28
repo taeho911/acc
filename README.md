@@ -15,9 +15,9 @@ acc [Subcommand] [Options] [Params]
     * -e    : E-mail
     * -a    : alias for the account
     * -m    : Memo
-> You can omit options.
-> **acc** will prompt required user inputs.
-> You don't need to give every input.
+    > You can omit options.
+    > **acc** will prompt required user inputs.
+    > You don't need to give every input.
 
 2. Params
     * None
@@ -41,7 +41,7 @@ Upper command will ask you remaining informations URL, e-mail, alias, memo promp
 
 2. Params
     * Index
-> You can give multiple indexs to delete with whitespace.
+    > You can give multiple indexs to delete with whitespace.
 
 3. Examples
 ```bash
@@ -59,8 +59,8 @@ Upper command will delete account informations which have 2 or 5 or 14 index num
     * -u    : Lists accounts matched to the user ID
     * -a    : Lists accounts containing the alias
     * -o    : Output format
-> If you don't give any options for **ls** command, **ls** searches all records and prints **short** format by default.
-> Each searching option is combined by **$and** operator.
+    > If you don't give any options for **ls** command, **ls** searches all records and prints **short** format by default.
+    > Each searching option is combined by **$and** operator.
 
 2. Output formats
     * short             : Only prints index, title, user ID, password on oneline
@@ -125,8 +125,8 @@ Upper command will delete account informations which have 2 or 5 or 14 index num
     * -a    : Alias
     * --add : Push alias into existing alias array
     * --del : Pull alias from existing alias array
-> Regarding alias modification, **acc mod** pushes given alias into existing alias array by default.
+    > Regarding alias modification, **acc mod** pushes given alias into existing alias array by default.
 
 2. Params
     * Index
-> You can give multiple indexs to delete with whitespace.
+    > You can give multiple indexs to delete with whitespace.
