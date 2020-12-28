@@ -42,14 +42,14 @@ func Ls(allFlag bool, id int, outputFormat, title, alias, uid string) {
 
 func printWide(result []db.Account) {
 	for _, item := range result {
-		fmt.Println("_id:\t", item.Id)
-		fmt.Println("title:\t", item.Title)
-		fmt.Println("uid:\t", item.Uid)
-		fmt.Println("pwd:\t", item.Pwd)
-		fmt.Println("url:\t", item.Url)
-		fmt.Println("email:\t", item.Email)
-		fmt.Println("alias:\t", item.Alias)
-		fmt.Println("memo:\t", item.Memo)
+		fmt.Println("Index:\t", item.Id)
+		fmt.Println("Title:\t", item.Title)
+		fmt.Println("Uid:\t", item.Uid)
+		fmt.Println("Pwd:\t", item.Pwd)
+		fmt.Println("Url:\t", item.Url)
+		fmt.Println("Email:\t", item.Email)
+		fmt.Println("Alias:\t", item.Alias)
+		fmt.Println("Memo:\t", item.Memo)
 		fmt.Println()
 	}
 }
