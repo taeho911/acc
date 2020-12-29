@@ -26,18 +26,26 @@ acc [Subcommand] [Options] [Params]
 ```bash
 acc add
 ```
-Upper command will ask you every informations to register account record prompting on console.
+Above command will ask you every informations to register account record prompting on console.
 
 ```bash
 acc add -t title -u userid -p password
 ```
-Upper command will ask you remaining informations URL, e-mail, alias, memo prompting on console. In case of alias, you can give multiple alias with whitespace.
+Above command will ask you remaining informations URL, e-mail, alias, memo prompting on console. In case of alias, you can give multiple alias with whitespace.
 
 
 ## DEL
 **del** deletes account information from database.
 1. Options
-    * None
+    * -t    : Title
+    * -u    : User ID
+    * -p    : Password
+    * -U    : URL
+    * -e    : E-mail
+    * -a    : Alias
+    * -m    : Memo
+    > If you pass any option, **del** will empty passed fields of records rather than delete records themselves.
+    > In case of **-a**, **del** will remove all elements of existing alias array.
 
 2. Params
     * Index
@@ -47,7 +55,12 @@ Upper command will ask you remaining informations URL, e-mail, alias, memo promp
 ```bash
 acc del 2 5 14
 ```
-Upper command will delete account informations which have 2 or 5 or 14 index number.
+Above command will delete account informations which have 2 or 5 or 14 index number.
+
+```bash
+acc del -e -a 2 5
+```
+Above command will empty email and alias field of account informations which have 2 or 5 index number.
 
 
 ## LS
@@ -123,6 +136,7 @@ Upper command will delete account informations which have 2 or 5 or 14 index num
     * -U    : URL
     * -e    : E-mail
     * -a    : Alias
+    * -m    : Memo
     * --add : Push alias into existing alias array
     * --del : Pull alias from existing alias array
     > Regarding alias modification, **acc mod** pushes given alias into existing alias array by default.

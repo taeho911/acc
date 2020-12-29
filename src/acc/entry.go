@@ -32,6 +32,13 @@ func main() {
 	addM		:= addCmd.String("m", "", "Memo")
 	
 	delCmd		:= flag.NewFlagSet(delStr, flag.ExitOnError)
+	delT		:= delCmd.Bool("t", false, "Title")
+	delU		:= delCmd.Bool("u", false, "User ID")
+	delP		:= delCmd.Bool("p", false, "Password")
+	delURL		:= delCmd.Bool("U", false, "URL")
+	delE		:= delCmd.Bool("e", false, "E-mail")
+	delA		:= delCmd.Bool("a", false, "Alias")
+	delM		:= delCmd.Bool("m", false, "Memo")
 
 	lsCmd		:= flag.NewFlagSet(lsStr, flag.ExitOnError)
 	lsAll		:= lsCmd.Bool("all", true, "List up all")
@@ -84,7 +91,7 @@ func main() {
 	case delStr:
 		delCmd.Parse(os.Args[2:])
 		idArr := delCmd.Args()
-		cmds.Del(idArr)
+		cmds.Del(idArr, *delT, *delU, *delP, *delURL, *delE, *delA, *delM)
 
 	case lsStr:
 		lsCmd.Parse(os.Args[2:])

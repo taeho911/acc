@@ -7,7 +7,7 @@ import (
 	"db"
 )
 
-func Del(idArr []string) {
+func Del(idArr []string, title, uid, pwd, url, email, alias, memo bool) {
 	idIntArr := make([]int, len(idArr))
 	var err error = nil
 	for i, item := range idArr {
@@ -15,7 +15,12 @@ func Del(idArr []string) {
 			fmt.Println(item, "cannot be converted to int")
 		}
 	}
-
-	result := db.DeleteMany(idIntArr)
-	fmt.Println("# Deleted documents:", result.DeletedCount)
+	
+	if title == true || uid == true || pwd == true || url == true || email == true || alias == true || memo == true {
+		result := db.EmptyFields(idIntArr, title, uid, pwd, url, email, alias, memo)
+		fmt.Println("# Emptied documents:", result.ModifiedCount)
+	} else {
+		result := db.DeleteMany(idIntArr)
+		fmt.Println("# Deleted documents:", result.DeletedCount)
+	}
 }

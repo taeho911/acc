@@ -254,4 +254,44 @@ func UpdateMany(idArr []int, title, uid, pwd, url, email, alias, memo string, de
 	return result
 }
 
+func EmptyFields(idArr []int, title, uid, pwd, url, email, alias, memo bool) *mongo.UpdateResult {
+	client, ctx, cancel := getClient()
+	defer delClient(client, ctx, cancel)
+	coll := client.Database(database).Collection(collection)
+
+	filter := bson.M{"_id": bson.D{{"$in", idArr}}}
+	setMap := bson.M{}
+	if title {
+		setMap["title"] = ""
+	}
+	if uid {
+		setMap["uid"] = ""
+	}
+	if pwd {
+		setMap["pwd"] = ""
+	}
+	if url {
+		setMap["url"] = ""
+	}
+	if email {
+		setMap["email"] = ""
+	}
+	if alias {
+		setMap["alias"] = []string {}
+	}
+	if memo {
+		setMap["memo"] = ""
+	}
+	update := bson.M{"$set": setMap}
+
+	result, err := coll.UpdateMany(ctx, filter, update)
+	if err != nil {
+		log.Println(err)
+		log.Panic("Failed to empty fields - 1")
+		return nil
+	}
+
+	return result
+}
+
 // TEST FUNCTIONS ============================================================
