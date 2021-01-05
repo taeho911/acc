@@ -19,14 +19,14 @@ const database string = "taeho"
 const collection string = "acc"
 
 type Account struct {
-	Id float64 `bson:"_id",omitempty`
-	Title string `bson:"title",omitempty`
-	Url string `bson:"url",omitempty`
-	Uid string `bson:"uid",omitempty`
-	Pwd string `bson:"pwd",omitempty`
-	Email string `bson:"email",omitempty`
-	Alias []string `bson:"alias",omitempty`
-	Memo string `bson:"memo",omitempty`
+	Id float64 `bson:"_id,omitempty"`
+	Title string `bson:"title,omitempty"`
+	Url string `bson:"url,omitempty"`
+	Uid string `bson:"uid,omitempty"`
+	Pwd string `bson:"pwd,omitempty"`
+	Email string `bson:"email,omitempty"`
+	Alias []string `bson:"alias,omitempty"`
+	Memo string `bson:"memo,omitempty"`
 }
 
 // INTERNAL FUNCTIONS ============================================================
