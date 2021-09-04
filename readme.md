@@ -78,7 +78,7 @@ Above command will empty email and alias field of account informations which hav
 2. Output formats
     * short             : Only prints index, title, user ID, password on oneline
     * wide              : Prints every columns on multiple lines
-    * format:[text]     : Prints customized format
+    * format=[text]     : Prints customized format
         * %i    : Index
         * %t    : Title
         * %u    : User ID
