@@ -44,6 +44,30 @@ func InsertOne(acc Acc) (interface{}, error) {
 	return result.InsertedID, nil
 }
 
+func InsertMany(accs []Acc) ([]interface{}, error) {
+	client, ctx, cancel, err1 := getClient()
+	defer delClient(client, ctx, cancel)
+	if err1 != nil {
+		return nil, err1
+	}
+	seqNums, err2 := getNextSeqMany(client, ctx, dbName, collName, len(accs))
+	if err2 != nil {
+		return nil, err2
+	}
+	var docs bson.A
+	for i := 0; i < len(seqNums); i++ {
+		accs[i].Index = seqNums[i]
+		accs[i].Deleted = false
+		docs = append(docs, accs[i])
+	}
+	coll := client.Database(dbName).Collection(collName)
+	result, err3 := coll.InsertMany(ctx, docs)
+	if err3 != nil {
+		return nil, err3
+	}
+	return result.InsertedIDs, nil
+}
+
 func DeleteMany(indexSlice []int) (int, error) {
 	client, ctx, cancel, err1 := getClient()
 	defer delClient(client, ctx, cancel)

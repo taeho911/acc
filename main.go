@@ -36,6 +36,7 @@ func main() {
 	addL := addCmd.String("l", "", "Location")
 	addE := addCmd.String("e", "", "Email")
 	addM := addCmd.String("m", "", "Memo")
+	addF := addCmd.String("f", "", "Insert from file")
 	addCmd.Var(&as, "a", "Alias")
 
 	delCmd := flag.NewFlagSet(delStr, flag.ExitOnError)
@@ -73,7 +74,11 @@ func main() {
 	switch os.Args[1] {
 	case addStr:
 		addCmd.Parse(os.Args[2:])
-		cli.Add(*addT, *addU, *addP, *addL, *addE, *addM, as)
+		if len(*addF) > 0 {
+			cli.AddFromFile(*addF)
+		} else {
+			cli.Add(*addT, *addU, *addP, *addL, *addE, *addM, as)
+		}
 
 	case delStr:
 		delCmd.Parse(os.Args[2:])

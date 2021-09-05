@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -81,4 +82,20 @@ func Add(title, username, password, location, email, memo string, aliasSlice []s
 		log.Panicf(PanicFormat, err2)
 	}
 	fmt.Println(result)
+}
+
+func AddFromFile(file string) {
+	fileByte, err1 := os.ReadFile(file)
+	if err1 != nil {
+		log.Panicf(PanicFormat, err1)
+	}
+	var accs []api.Acc
+	json.Unmarshal(fileByte, &accs)
+	result, err2 := api.InsertMany(accs)
+	if err2 != nil {
+		log.Panicf(PanicFormat, err2)
+	}
+	for _, item := range result {
+		fmt.Println(item)
+	}
 }

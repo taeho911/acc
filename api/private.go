@@ -73,5 +73,26 @@ func getNextSeq(client *mongo.Client, ctx context.Context, dbName string, collNa
 		return -1, err1
 	}
 
-	return int(updatedDoc["seq_num"].(int32)), nil
+	return int(updatedDoc["seq_num"].(float64)), nil
+}
+
+func getNextSeqMany(client *mongo.Client, ctx context.Context, dbName string, collName string, inc int) ([]int, error) {
+	coll := client.Database(dbName).Collection("seq")
+	filter := bson.D{{"_id", collName}}
+	update := bson.D{{"$inc", bson.D{{"seq_num", inc}}}}
+	opts := options.FindOneAndUpdate().SetUpsert(true)
+
+	var updatedDoc bson.M
+	err1 := coll.FindOneAndUpdate(ctx, filter, update, opts).Decode(&updatedDoc)
+	if err1 != nil {
+		return nil, err1
+	}
+
+	var result []int
+	startNum := int(updatedDoc["seq_num"].(float64))
+	for i := 0; i < inc; i++ {
+		result = append(result, startNum+i)
+	}
+
+	return result, nil
 }
