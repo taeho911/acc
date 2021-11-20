@@ -11,6 +11,7 @@ import (
 var dbName string = os.Getenv(dbNameKey)
 var collName string = os.Getenv(collNameKey)
 
+// DB에 접근 가능한지 판별하는 함수
 func Ping() (bool, error) {
 	client, ctx, cancel, err1 := getClient()
 	defer delClient(client, ctx, cancel)
@@ -84,6 +85,8 @@ func DeleteMany(indexSlice []int) (int, error) {
 	return int(result.ModifiedCount), nil
 }
 
+// 기존의 데이터에서 특정 필드(컬럼)만을 비우고 싶을때 사용된다.
+// del 서브커맨드에서 사용되는 함수
 func EmptyFields(indexSlice []int, title, username, password, location, email, memo, alias bool) (int, error) {
 	client, ctx, cancel, err1 := getClient()
 	defer delClient(client, ctx, cancel)
@@ -132,10 +135,10 @@ func FindAll() ([]Acc, error) {
 	filter := bson.M{"deleted": false}
 	opts := options.Find().SetSort(bson.D{{"index", 1}})
 	cursor, err2 := coll.Find(ctx, filter, opts)
-	defer cursor.Close(ctx)
 	if err2 != nil {
 		return nil, err2
 	}
+	defer cursor.Close(ctx)
 	var result []Acc
 	if err3 := cursor.All(ctx, &result); err3 != nil {
 		return nil, err3
@@ -167,10 +170,10 @@ func Find(index int, title, username string, aliasSlice []string) ([]Acc, error)
 	filter := bson.M{"$and": conditions}
 	opts := options.Find().SetSort(bson.D{{"index", 1}})
 	cursor, err2 := coll.Find(ctx, filter, opts)
-	defer cursor.Close(ctx)
 	if err2 != nil {
 		return nil, err2
 	}
+	defer cursor.Close(ctx)
 	var result []Acc
 	if err3 := cursor.All(ctx, &result); err3 != nil {
 		return nil, err3
