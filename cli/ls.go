@@ -103,12 +103,14 @@ func convertFormat(format string, item api.Acc) string {
 func sliceToString(slice []string) string {
 	var sb strings.Builder
 	length := len(slice)
-	sb.WriteString("[ ")
-	for i, val := range slice {
-		sb.WriteString(val)
-		sb.WriteString(" ")
-		if i == length-1 {
-			sb.WriteString("]")
+	if len(slice) > 0 {
+		sb.WriteString("[ ")
+		for i, val := range slice {
+			sb.WriteString(val)
+			sb.WriteString(" ")
+			if i == length-1 {
+				sb.WriteString("]")
+			}
 		}
 	}
 	return sb.String()
