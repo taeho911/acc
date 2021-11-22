@@ -129,7 +129,7 @@ Above command will empty email and alias field of account informations which hav
 
 ```bash
 <Command>
-    acc ls -o "format:This is customized format %i %t" -t gmail
+    acc ls -o "format=This is customized format %i %t" -t gmail
 
 <Result>
     This is customized format 7 gmail-jp
